@@ -1,17 +1,23 @@
 const express = require('express');
+const { body, validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
-const { body, validationResult } = require('express-validator');
 
 const router = express.Router();
 
-// Rota de registro
+// Route to register a new user
 router.post(
   '/register',
   [
-    body('username').notEmpty().withMessage('Username is required'),
-    body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters')
+    body('username')
+      .trim() // Remove whitespace from both ends
+      .escape() // Escape special characters to avoid code injection
+      .notEmpty().withMessage('Username is required')
+      .isLength({ min: 3 }).withMessage('Username must be at least 3 characters'),
+    body('password')
+      .trim()
+      .isLength({ min: 6 }).withMessage('Password must be at least 6 characters')
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -28,6 +34,9 @@ router.post(
       }
 
       user = new User({ username, password });
+      const salt = await bcrypt.genSalt(10);
+      user.password = await bcrypt.hash(password, salt);
+
       await user.save();
 
       const payload = { user: { id: user.id } };
@@ -35,17 +44,22 @@ router.post(
 
       res.status(201).json({ token });
     } catch (err) {
-      res.status(500).send('Server error');
+      res.status(500).json({ msg: 'Server error' });
     }
   }
 );
 
-// Rota de login
+// Route to login a user
 router.post(
   '/login',
   [
-    body('username').notEmpty().withMessage('Username is required'),
-    body('password').notEmpty().withMessage('Password is required'),
+    body('username')
+      .trim() // Remove whitespace from both ends
+      .escape() // Escape special characters to avoid code injection
+      .notEmpty().withMessage('Username is required'),
+    body('password')
+      .trim()
+      .notEmpty().withMessage('Password is required')
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -71,7 +85,7 @@ router.post(
 
       res.json({ token });
     } catch (err) {
-      res.status(500).send('Server error');
+      res.status(500).json({ msg: 'Server error' });
     }
   }
 );
