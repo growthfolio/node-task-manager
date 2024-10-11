@@ -6,17 +6,17 @@ const auth = require('../middleware/auth');
 
 const router = express.Router();
 
-// Rota para listar todas as tarefas
+// Route to list all tasks
 router.get('/', async (req, res) => {
   try {
-    //try to get tasks from cache
+    // Try to get tasks from cache
     const cachedTasks = await redisClient.get('tasks');
     if (cachedTasks) {
       return res.json(JSON.parse(cachedTasks));
     }
 
     const tasks = await Task.find();
-    //define cache expiration time to 1 hour
+    // Set cache expiration time to 1 hour
     await redisClient.set('tasks', JSON.stringify(tasks), {
       EX: 3600,
     });
@@ -27,11 +27,16 @@ router.get('/', async (req, res) => {
   }
 });
 
-// create task route (protected) 
+// Route to create a new task (protected)
 router.post(
   '/',
   auth,
-  [body('title').notEmpty().withMessage('Title cannot be empty')],
+  [
+    body('title')
+      .trim() // Remove whitespace from both ends
+      .escape() // Escape special characters to avoid code injection
+      .notEmpty().withMessage('Title cannot be empty')
+  ],
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -50,15 +55,16 @@ router.post(
   }
 );
 
-// update task route (protected)
+// Route to update a task (protected)
 router.put(
   '/:id',
   auth,
   [
     body('status')
       .optional()
+      .trim() // Remove whitespace from both ends
       .isIn(['pending', 'complete'])
-      .withMessage('Status must be either "pending" or "complete"'),
+      .withMessage('Status must be either "pending" or "complete"')
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -83,7 +89,7 @@ router.put(
   }
 );
 
-// delete task route (protected)
+// Route to delete a task (protected)
 router.delete('/:id', auth, async (req, res) => {
   try {
     const task = await Task.findByIdAndDelete(req.params.id);
