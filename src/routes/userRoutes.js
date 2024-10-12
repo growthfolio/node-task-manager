@@ -28,7 +28,9 @@ router.post(
     const { username, password } = req.body;
 
     try {
-      let user = await User.findOne({ username });
+      // Create a query object using toString() to ensure safe conversion
+      const query = { username: username.toString() };
+      let user = await User.findOne(query);
       if (user) {
         return res.status(400).json({ msg: 'User already exists' });
       }
@@ -70,7 +72,9 @@ router.post(
     const { username, password } = req.body;
 
     try {
-      const user = await User.findOne({ username });
+      // Create a query object using toString() to ensure safe conversion
+      const query = { username: username.toString() };
+      const user = await User.findOne(query);
       if (!user) {
         return res.status(400).json({ msg: 'Invalid credentials' });
       }
