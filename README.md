@@ -1,5 +1,15 @@
-
 # To-Do List Application
+
+<div align="left">
+
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=felipemacedo1_node-task-manager&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=felipemacedo1_node-task-manager)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=felipemacedo1_node-task-manager&metric=bugs)](https://sonarcloud.io/summary/new_code?id=felipemacedo1_node-task-manager)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=felipemacedo1_node-task-manager&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=felipemacedo1_node-task-manager)
+[![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=felipemacedo1_node-task-manager&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=felipemacedo1_node-task-manager)
+[![Technical Debt](https://sonarcloud.io/api/project_badges/measure?project=felipemacedo1_node-task-manager&metric=sqale_index)](https://sonarcloud.io/summary/new_code?id=felipemacedo1_node-task-manager)
+
+</div>
+
 
 Este é um projeto de API para gerenciamento de tarefas (To-Do List) desenvolvido em Node.js, com persistência no MongoDB e uso de Redis para cache. A API permite operações de CRUD (Create, Read, Update, Delete) para gerenciar as tarefas, e é construída seguindo boas práticas de desenvolvimento.
 
@@ -115,8 +125,6 @@ docker compose down
 ```
 
 ## Melhorias Futuras
-
-- Implementar autenticação com JWT.
 - Adicionar testes automatizados.
 - Implementar o front-end para interação com a API.
 - Configurar HTTPS para segurança.

@@ -1,8 +1,8 @@
 const express = require('express');
+const { body, validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
-const { body, validationResult } = require('express-validator');
 
 const router = express.Router();
 
@@ -25,12 +25,17 @@ router.post(
     const { username, password } = req.body;
 
     try {
-      let user = await User.findOne({ username });
+      // Create a query object using toString() to ensure safe conversion
+      const query = { username: username.toString() };
+      let user = await User.findOne(query);
       if (user) {
         return res.status(400).json({ msg: 'User already exists' });
       }
 
       user = new User({ username, password });
+      const salt = await bcrypt.genSalt(10);
+      user.password = await bcrypt.hash(password, salt);
+
       await user.save();
 
       const payload = { user: { id: user.id } };
@@ -64,7 +69,9 @@ router.post(
     const { username, password } = req.body;
 
     try {
-      const user = await User.findOne({ username });
+      // Create a query object using toString() to ensure safe conversion
+      const query = { username: username.toString() };
+      const user = await User.findOne(query);
       if (!user) {
         return res.status(400).json({ msg: 'Invalid credentials' });
       }

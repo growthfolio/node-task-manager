@@ -27,11 +27,17 @@ router.get('/', async (req, res) => {
   }
 });
 
+// Route to create a new task (protected)
 // Rota para criar uma nova tarefa (requer autenticação)
 router.post(
   '/',
   auth,
-  [body('title').notEmpty().withMessage('Title cannot be empty')],
+  [
+    body('title')
+      .trim() // Remove whitespace from both ends
+      .escape() // Escape special characters to avoid code injection
+      .notEmpty().withMessage('Title cannot be empty')
+  ],
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -56,8 +62,9 @@ router.put(
   [
     body('status')
       .optional()
+      .trim() // Remove whitespace from both ends
       .isIn(['pending', 'complete'])
-      .withMessage('Status must be either "pending" or "complete"'),
+      .withMessage('Status must be either "pending" or "complete"')
   ],
   async (req, res) => {
     const errors = validationResult(req);
