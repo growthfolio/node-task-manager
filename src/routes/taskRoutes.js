@@ -6,17 +6,14 @@ const auth = require('../middleware/auth');
 
 const router = express.Router();
 
-// Route to list all tasks
 router.get('/', async (req, res) => {
   try {
-    // Try to get tasks from cache
     const cachedTasks = await redisClient.get('tasks');
     if (cachedTasks) {
       return res.json(JSON.parse(cachedTasks));
     }
 
     const tasks = await Task.find();
-    // Set cache expiration time to 1 hour
     await redisClient.set('tasks', JSON.stringify(tasks), {
       EX: 3600,
     });
@@ -27,7 +24,6 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Route to create a new task (protected)
 router.post(
   '/',
   auth,
@@ -55,10 +51,8 @@ router.post(
   }
 );
 
-// Route to update a task (protected)
 router.put(
   '/:id',
-  auth,
   [
     body('status')
       .optional()
@@ -89,7 +83,6 @@ router.put(
   }
 );
 
-// Route to delete a task (protected)
 router.delete('/:id', auth, async (req, res) => {
   try {
     const task = await Task.findByIdAndDelete(req.params.id);

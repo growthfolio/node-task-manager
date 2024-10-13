@@ -6,17 +6,14 @@ const User = require('../models/User');
 
 const router = express.Router();
 
-// Route to register a new user
 router.post(
   '/register',
   [
     body('username')
-      .trim() // Remove whitespace from both ends
-      .escape() // Escape special characters to avoid code injection
-      .notEmpty().withMessage('Username is required')
-      .isLength({ min: 3 }).withMessage('Username must be at least 3 characters'),
+      .trim()  
+      .escape()
+      .notEmpty().withMessage('Username is required'),
     body('password')
-      .trim()
       .isLength({ min: 6 }).withMessage('Password must be at least 6 characters')
   ],
   async (req, res) => {
@@ -46,21 +43,21 @@ router.post(
 
       res.status(201).json({ token });
     } catch (err) {
-      res.status(500).json({ msg: 'Server error' });
+      console.error('Error during user registration:', err.message);
+      res.status(500).send('Server error');
     }
   }
 );
 
-// Route to login a user
+
 router.post(
   '/login',
   [
     body('username')
-      .trim() // Remove whitespace from both ends
-      .escape() // Escape special characters to avoid code injection
+      .trim()  
+      .escape()
       .notEmpty().withMessage('Username is required'),
     body('password')
-      .trim()
       .notEmpty().withMessage('Password is required')
   ],
   async (req, res) => {
@@ -89,7 +86,8 @@ router.post(
 
       res.json({ token });
     } catch (err) {
-      res.status(500).json({ msg: 'Server error' });
+      console.error('Error during user login:', err.message);
+      res.status(500).send('Server error');
     }
   }
 );
