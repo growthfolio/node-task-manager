@@ -6,17 +6,14 @@ const auth = require('../middleware/auth');
 
 const router = express.Router();
 
-// Rota para obter todas as tarefas
 router.get('/', async (req, res) => {
   try {
-    // Tenta buscar as tarefas no cache
     const cachedTasks = await redisClient.get('tasks');
     if (cachedTasks) {
       return res.json(JSON.parse(cachedTasks));
     }
 
     const tasks = await Task.find();
-    // Define o tempo de expiração do cache para 1 hora
     await redisClient.set('tasks', JSON.stringify(tasks), {
       EX: 3600,
     });
@@ -27,8 +24,6 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Route to create a new task (protected)
-// Rota para criar uma nova tarefa (requer autenticação)
 router.post(
   '/',
   auth,
@@ -56,7 +51,6 @@ router.post(
   }
 );
 
-// Rota para atualizar uma tarefa (não requer autenticação)
 router.put(
   '/:id',
   [
@@ -89,7 +83,6 @@ router.put(
   }
 );
 
-// Rota para deletar uma tarefa (requer autenticação)
 router.delete('/:id', auth, async (req, res) => {
   try {
     const task = await Task.findByIdAndDelete(req.params.id);
