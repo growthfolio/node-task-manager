@@ -6,12 +6,15 @@ const { body, validationResult } = require('express-validator');
 
 const router = express.Router();
 
-// Rota de registro
 router.post(
   '/register',
   [
-    body('username').notEmpty().withMessage('Username is required'),
-    body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters')
+    body('username')
+      .trim()  
+      .escape()
+      .notEmpty().withMessage('Username is required'),
+    body('password')
+      .isLength({ min: 6 }).withMessage('Password must be at least 6 characters')
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -35,17 +38,22 @@ router.post(
 
       res.status(201).json({ token });
     } catch (err) {
+      console.error('Error during user registration:', err.message);
       res.status(500).send('Server error');
     }
   }
 );
 
-// Rota de login
+
 router.post(
   '/login',
   [
-    body('username').notEmpty().withMessage('Username is required'),
-    body('password').notEmpty().withMessage('Password is required'),
+    body('username')
+      .trim()  
+      .escape()
+      .notEmpty().withMessage('Username is required'),
+    body('password')
+      .notEmpty().withMessage('Password is required')
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -71,6 +79,7 @@ router.post(
 
       res.json({ token });
     } catch (err) {
+      console.error('Error during user login:', err.message);
       res.status(500).send('Server error');
     }
   }

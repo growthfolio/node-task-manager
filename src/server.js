@@ -6,9 +6,20 @@ const userRoutes = require('./routes/userRoutes');
 
 dotenv.config();
 
-
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+
+const cors = require('cors');
+
+app.use(cors({
+  origin: 'http://127.0.0.1:5500', // Especifique o domínio do seu front-end
+  methods: 'GET,POST,PUT,DELETE,OPTIONS',
+  allowedHeaders: 'Origin, X-Requested-With, Content-Type, Accept, Authorization'
+}));
+app.options('*', cors());  // Permite requisições de verificação prévia (preflight requests)
+
+
 
 app.use(express.json());
 
