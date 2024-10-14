@@ -9,21 +9,23 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-
 const cors = require('cors');
 
-const allowedOrigins = [
-  'https://my-front-task-manager.firebaseapp.com',
-  'http://127.0.0.1:5500',
-];
+const allowedOrigins = process.env.ALLOWED_ORIGINS.split(',');
 
 app.use(cors({
-  origin: allowedOrigins,
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   methods: 'GET,POST,PUT,DELETE,OPTIONS',
   allowedHeaders: 'Origin, X-Requested-With, Content-Type, Accept, Authorization'
 }));
 
-app.options('*', cors());  
+app.options('*', cors());
 
 app.use(express.json());
 
@@ -34,7 +36,6 @@ mongoose.connect(process.env.MONGO_URI, {
   .catch(err => console.error('MongoDB connection error:', err));
 
 app.use('/tasks', taskRoutes);
-
 app.use('/users', userRoutes);
 
 app.listen(PORT, () => {
