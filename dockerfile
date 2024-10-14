@@ -12,4 +12,4 @@ COPY . .
 
 EXPOSE 3000
 
-CMD ["nodemon", "src/server.js"]
+CMD ["nodemon", "/app/src/server.js"]
