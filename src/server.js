@@ -12,11 +12,17 @@ const PORT = process.env.PORT || 3000;
 
 const cors = require('cors');
 
+const allowedOrigins = [
+  'https://my-front-task-manager.firebaseapp.com',
+  'http://127.0.0.1:5500',
+];
+
 app.use(cors({
-  origin: 'http://127.0.0.1:5500',
+  origin: allowedOrigins,
   methods: 'GET,POST,PUT,DELETE,OPTIONS',
   allowedHeaders: 'Origin, X-Requested-With, Content-Type, Accept, Authorization'
 }));
+
 app.options('*', cors());  
 
 app.use(express.json());
