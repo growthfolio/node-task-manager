@@ -26,19 +26,23 @@ O deploy, sem dúvidas, foi a parte mais desafiadora do projeto, já que eu nunc
 
 ### **Deploy na AWS**
 
-Inicialmente, optei pela **EC2 da AWS**. Após configurar a instância, o projeto funcionou, mas houve um problema com a segurança de acesso.
+Inicialmente, optei pela **EC2 da AWS**. Após configurar a instância, o projeto funcionou, mas encontrei problemas de segurança de acesso.
 
-> **Problema:** Sem um domínio próprio, tive que usar o IP público da AWS. Isso fez com que navegadores identificassem o site como inseguro e bloqueassem o acesso.  
-> **Solução:** Busquei alternativas e encontrei o **Firebase Hosting**, que oferecia um domínio gratuito.
+> **Problema:** Sem um domínio próprio, precisei utilizar o IP público da instância, o que fez com que navegadores identificassem a rota como insegura e bloqueassem o acesso.  
+> **Solução:** Migrei para o **Cloud Run** do **Google Cloud** para o back-end, e usei o **Firebase Hosting** para o front-end. O Firebase ofereceu um domínio gratuito e uma configuração dinâmica para o front-end, enquanto o **Cloud Run** garantiu a escalabilidade do back-end.
 
 ### **Deploy no Google Cloud**
 
-Decidi então mover o **front-end** para o Firebase e o **back-end** para o **Google Cloud**. O processo de deploy no Google Cloud foi diferente do que eu tinha feito na AWS, mas consegui realizar sem grandes problemas.
+Decidi então mover o **front-end** para o Firebase e o **back-end** para o **Google Cloud**. O processo de deploy foi diferente do que eu havia feito na AWS, mas consegui completar sem grandes complicações.
 
-No entanto, um novo desafio surgiu:
+Logo após, um novo desafio surgiu:
 
-> **Problema:** O **MongoDB** e o **Redis** estavam configurados localmente e não poderiam ser usados no Google Cloud sem custos adicionais.  
-> **Solução em Progresso:** Estou implementando soluções gratuitas, como o **MongoDB Atlas** e buscando alternativas para o Redis, para garantir que a aplicação funcione plenamente sem extrapolar o budget disponível.
+> **Problema:** O **MongoDB** e o **Redis** estavam configurados localmente, o que não era viável no ambiente Google Cloud sem incorrer em custos adicionais.  
+> **Solução:** Utilizei o **MongoDB Atlas**, que oferece um plano gratuito e pode ser facilmente integrado ao Google Cloud. Para o Redis, criei uma instância dentro do próprio Google Cloud, garantindo a integração com a **VPC**.
+
+> **Configuração da VPC:**  
+> Para conectar o **MongoDB Atlas**, configurei uma **Cloud NAT** no Google Cloud para obter um **IP fixo**. Esse IP foi adicionado à whitelist do MongoDB Atlas, garantindo acesso seguro ao banco de dados. Já o **Redis** foi configurado dentro da **VPC**, eliminando problemas de conectividade e mantendo a comunicação segura entre as instâncias.
+
 
 ---
 
