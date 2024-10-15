@@ -86,48 +86,116 @@ http://localhost:3000/tasks
 
 Esse endpoint deve retornar uma lista de tarefas (inicialmente vazia).
 
-## Endpoints da API
+## Endpoints de Usuários
 
-### 1. Listar todas as tarefas
+### 1. Registrar Usuário
 
-- **GET** `/tasks`
-
-### 2. Adicionar uma nova tarefa
-
-- **POST** `/tasks`
-- Corpo da requisição:
+- **URL**: `/users/register`
+- **Método**: `POST`
+- **Descrição**: Registra um novo usuário no sistema.
+- **Body da Requisição**:
   ```json
   {
-    "title": "Título da tarefa"
+    "username": "testuser",
+    "password": "password123"
   }
   ```
+- **Headers**:
+  - `Content-Type: application/json`
 
-### 3. Atualizar o status de uma tarefa
+### 2. Login de Usuário
 
-- **PUT** `/tasks/:id`
-- Corpo da requisição:
+- **URL**: `/users/login`
+- **Método**: `POST`
+- **Descrição**: Autentica um usuário existente e retorna um token JWT.
+- **Body da Requisição**:
   ```json
   {
-    "status": "pending" ou "complete"
+    "username": "testuser",
+    "password": "password123"
   }
   ```
+- **Headers**:
+  - `Content-Type: application/json`
 
-### 4. Remover uma tarefa
+## Endpoints de Tarefas
 
-- **DELETE** `/tasks/:id`
+### 1. Listar Todas as Tarefas
 
-## Parando o projeto
+- **URL**: `/tasks`
+- **Método**: `GET`
+- **Descrição**: Retorna uma lista de todas as tarefas com suporte opcional a cache.
+- **Headers**:
+  - `Authorization: Bearer {{ jwt_token }}`
 
-Para parar os containers, execute o comando:
+### 2. Adicionar Nova Tarefa
 
-```bash
-docker compose down
+- **URL**: `/tasks`
+- **Método**: `POST`
+- **Descrição**: Adiciona uma nova tarefa.
+- **Body da Requisição**:
+  ```json
+  {
+    "title": "New Task"
+  }
+  ```
+- **Headers**:
+  - `Content-Type: application/json`
+  - `Authorization: Bearer {{ jwt_token }}`
+
+### 3. Atualizar o Status de uma Tarefa
+
+- **URL**: `/tasks/:id`
+- **Método**: `PUT`
+- **Descrição**: Atualiza o status de uma tarefa existente.
+- **Body da Requisição**:
+  ```json
+  {
+    "status": "complete"
+  }
+  ```
+- **Headers**:
+  - `Content-Type: application/json`
+  - `Authorization: Bearer {{ jwt_token }}`
+
+### 4. Deletar Tarefa por ID
+
+- **URL**: `/tasks/:id`
+- **Método**: `DELETE`
+- **Descrição**: Remove uma tarefa existente com base no seu ID.
+- **Headers**:
+  - `Authorization: Bearer {{ jwt_token }}`
+
+## Ambiente
+
+- **Base URL**: `http://localhost:3000`
+- **JWT Token**: Adicionado no header como `Authorization: Bearer {{ jwt_token }}`.
+
+### Exemplo de Configuração de Ambiente:
+
+```json
+{
+  "base_url": "http://localhost:3000",
+  "jwt_token": "your-jwt-token-here"
+}
 ```
 
-## Melhorias Futuras
-- Adicionar testes automatizados.
-- Implementar o front-end para interação com a API.
-- Configurar HTTPS para segurança.
+### Endpoints Cobertos:
+
+- Registrar Usuário
+- Login de Usuário
+- Listar Todas as Tarefas
+- Adicionar Nova Tarefa (Precisa estar autenticado)
+- Atualizar o Status de uma Tarefa
+- Deletar Tarefa por ID (Precisa estar autenticado)
+
+---
+
+## Proximas melhorias:
+
+- **Testes unitários**: Implementar testes unitários para as funções principais da API, para garantir que o básico esteja bem coberto.
+- **Testes de integração**: Implementar testes de integração para verificar se a API, MongoDB e Redis estão funcionando bem juntos.
+- **Cobertura de testes**: Garantir que a cobertura de testes seja superior a 70%, usando ferramentas como Jest ou SonarCloud para monitorar isso.
 
 <!-- 
 ## Contribuições
