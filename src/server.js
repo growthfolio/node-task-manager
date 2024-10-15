@@ -4,14 +4,16 @@ const dotenv = require('dotenv');
 const taskRoutes = require('./routes/taskRoutes');
 const userRoutes = require('./routes/userRoutes');
 
-dotenv.config();
+if (process.env.NODE_ENV !== 'production') {
+  dotenv.config();
+}
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 const cors = require('cors');
 
-const allowedOrigins = process.env.ALLOWED_ORIGINS.split(',');
+const allowedOrigins = process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : [];
 
 app.use(cors({
   origin: function (origin, callback) {
@@ -26,7 +28,6 @@ app.use(cors({
 }));
 
 app.options('*', cors());
-
 app.use(express.json());
 
 mongoose.connect(process.env.MONGO_URI, {
@@ -39,5 +40,5 @@ app.use('/tasks', taskRoutes);
 app.use('/users', userRoutes);
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
 });
