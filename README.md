@@ -1,207 +1,291 @@
-# To-Do List Application
+# 📝 Node Task Manager - API de Gerenciamento de Tarefas
 
-<div align="left">
+## 🎯 Objetivo de Aprendizado
+Projeto desenvolvido para estudar **Node.js puro** e **arquitetura de APIs**, implementando um sistema completo de gerenciamento de tarefas com autenticação JWT, cache Redis, persistência MongoDB e containerização Docker.
 
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=felipemacedo1_node-task-manager&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=felipemacedo1_node-task-manager)
-[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=felipemacedo1_node-task-manager&metric=bugs)](https://sonarcloud.io/summary/new_code?id=felipemacedo1_node-task-manager)
-[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=felipemacedo1_node-task-manager&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=felipemacedo1_node-task-manager)
-[![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=felipemacedo1_node-task-manager&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=felipemacedo1_node-task-manager)
-[![Technical Debt](https://sonarcloud.io/api/project_badges/measure?project=felipemacedo1_node-task-manager&metric=sqale_index)](https://sonarcloud.io/summary/new_code?id=felipemacedo1_node-task-manager)
+## 🛠️ Tecnologias Utilizadas
+- **Runtime:** Node.js
+- **Framework:** Express.js
+- **Banco de Dados:** MongoDB
+- **Cache:** Redis
+- **Autenticação:** JWT (JSON Web Tokens)
+- **Validação:** Express-validator
+- **Containerização:** Docker, Docker Compose
+- **Qualidade:** SonarCloud
+- **Conceitos estudados:**
+  - APIs RESTful com Node.js
+  - Autenticação e autorização
+  - Cache strategies com Redis
+  - NoSQL com MongoDB
+  - Containerização e orquestração
+  - Middleware e validações
 
-</div>
-
-
-Este é um projeto de API para gerenciamento de tarefas (To-Do List) desenvolvido em Node.js, com persistência no MongoDB e uso de Redis para cache. A API permite operações de CRUD (Create, Read, Update, Delete) para gerenciar as tarefas, e é construída seguindo boas práticas de desenvolvimento.
-
-## Funcionalidades
-
-- Adicionar uma nova tarefa.
-- Atualizar o status de uma tarefa (pendente/completa).
-- Remover uma tarefa.
-- Listar todas as tarefas com suporte a cache para melhorar a performance.
-
-## Tecnologias Utilizadas
-
-- Node.js
-- Express
-- MongoDB
-- Redis
-- Docker
-- Docker Compose
-- Express-validator (para validação de dados)
-
-## Pré-requisitos
-
-Antes de começar, certifique-se de ter os seguintes itens instalados em sua máquina:
-
-- [Docker](https://www.docker.com/get-started)
-- [Docker Compose](https://docs.docker.com/compose/install/)
-- [Git](https://git-scm.com/)
-
-## Como baixar e rodar o projeto
-
-### 1. Clone o repositório
-
-```bash
-git clone git@github.com:felipemacedo1/node-task-manager.git
-cd node-task-manager
-```
-
-### 2. Configuração do ambiente
-
-Crie um arquivo `.env` na raiz do projeto com as seguintes variáveis de ambiente:
-
-```
-# Configurações da aplicação
-NODE_ENV=development
-PORT=3000
-
-# Configurações do MongoDB
-MONGO_URI=mongodb://mongo:27017/taskmanager
-
-# Configurações do Redis
-REDIS_URL=redis://redis:6379
-```
-
-### 3. Rodando o projeto com Docker
-
-Use o Docker Compose para construir e iniciar os containers:
-
-```bash
-docker compose up -d --build
-```
-
-Esse comando vai subir três containers:
-- `task-manager-app`: o container Node.js com a aplicação.
-- `mongo`: o container com o banco de dados MongoDB.
-- `redis`: o container com o servidor Redis.
-
-### 4. Verificando se a aplicação está rodando
-
-Após iniciar os containers, acesse a URL abaixo para verificar se a API está respondendo:
-
-```
-http://localhost:3000/tasks
-```
-
-Esse endpoint deve retornar uma lista de tarefas (inicialmente vazia).
-
-## Endpoints de Usuários
-
-### 1. Registrar Usuário
-
-- **URL**: `/users/register`
-- **Método**: `POST`
-- **Descrição**: Registra um novo usuário no sistema.
-- **Body da Requisição**:
-  ```json
-  {
-    "username": "testuser",
-    "password": "password123"
+## 🚀 Demonstração
+```javascript
+// Middleware de autenticação JWT
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  
+  if (!token) {
+    return res.status(401).json({ error: 'Token de acesso requerido' });
   }
-  ```
-- **Headers**:
-  - `Content-Type: application/json`
+  
+  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    if (err) return res.status(403).json({ error: 'Token inválido' });
+    req.user = user;
+    next();
+  });
+};
 
-### 2. Login de Usuário
-
-- **URL**: `/users/login`
-- **Método**: `POST`
-- **Descrição**: Autentica um usuário existente e retorna um token JWT.
-- **Body da Requisição**:
-  ```json
-  {
-    "username": "testuser",
-    "password": "password123"
+// Controller com cache Redis
+const getTasks = async (req, res) => {
+  try {
+    // Verificar cache primeiro
+    const cachedTasks = await redisClient.get(`tasks:${req.user.id}`);
+    if (cachedTasks) {
+      return res.json(JSON.parse(cachedTasks));
+    }
+    
+    // Buscar no banco se não estiver em cache
+    const tasks = await Task.find({ userId: req.user.id });
+    
+    // Salvar no cache por 5 minutos
+    await redisClient.setex(`tasks:${req.user.id}`, 300, JSON.stringify(tasks));
+    
+    res.json(tasks);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
-  ```
-- **Headers**:
-  - `Content-Type: application/json`
+};
+```
 
-## Endpoints de Tarefas
+## 💡 Principais Aprendizados
 
-### 1. Listar Todas as Tarefas
+### 🌐 API RESTful
+- **Endpoints:** CRUD completo para tarefas
+- **HTTP Methods:** GET, POST, PUT, DELETE
+- **Status Codes:** Uso correto de códigos de resposta
+- **Middleware:** Autenticação, validação, logging
 
-- **URL**: `/tasks`
-- **Método**: `GET`
-- **Descrição**: Retorna uma lista de todas as tarefas com suporte opcional a cache.
-- **Headers**:
-  - `Authorization: Bearer {{ jwt_token }}`
+### 🔐 Autenticação e Segurança
+- **JWT:** Tokens para autenticação stateless
+- **Bcrypt:** Hash de senhas
+- **Middleware:** Proteção de rotas
+- **Validação:** Express-validator para dados
 
-### 2. Adicionar Nova Tarefa
+### 📊 Persistência e Cache
+- **MongoDB:** Banco NoSQL para dados
+- **Redis:** Cache para performance
+- **Mongoose:** ODM para MongoDB
+- **Cache Strategy:** Cache-aside pattern
 
-- **URL**: `/tasks`
-- **Método**: `POST`
-- **Descrição**: Adiciona uma nova tarefa.
-- **Body da Requisição**:
-  ```json
-  {
-    "title": "New Task"
+## 🧠 Conceitos Técnicos Estudados
+
+### 1. **Estrutura de API RESTful**
+```javascript
+// Routes com middleware de autenticação
+router.get('/tasks', authenticateToken, getTasks);
+router.post('/tasks', authenticateToken, validateTask, createTask);
+router.put('/tasks/:id', authenticateToken, validateTask, updateTask);
+router.delete('/tasks/:id', authenticateToken, deleteTask);
+
+// Validação com express-validator
+const validateTask = [
+  body('title').notEmpty().withMessage('Título é obrigatório'),
+  body('status').optional().isIn(['pending', 'complete']),
+  (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+    next();
   }
-  ```
-- **Headers**:
-  - `Content-Type: application/json`
-  - `Authorization: Bearer {{ jwt_token }}`
+];
+```
 
-### 3. Atualizar o Status de uma Tarefa
-
-- **URL**: `/tasks/:id`
-- **Método**: `PUT`
-- **Descrição**: Atualiza o status de uma tarefa existente.
-- **Body da Requisição**:
-  ```json
-  {
-    "status": "complete"
+### 2. **Cache com Redis**
+```javascript
+class CacheService {
+  static async get(key) {
+    try {
+      const data = await redisClient.get(key);
+      return data ? JSON.parse(data) : null;
+    } catch (error) {
+      console.error('Cache get error:', error);
+      return null;
+    }
   }
-  ```
-- **Headers**:
-  - `Content-Type: application/json`
-  - `Authorization: Bearer {{ jwt_token }}`
-
-### 4. Deletar Tarefa por ID
-
-- **URL**: `/tasks/:id`
-- **Método**: `DELETE`
-- **Descrição**: Remove uma tarefa existente com base no seu ID.
-- **Headers**:
-  - `Authorization: Bearer {{ jwt_token }}`
-
-## Ambiente
-
-- **Base URL**: `http://localhost:3000`
-- **JWT Token**: Adicionado no header como `Authorization: Bearer {{ jwt_token }}`.
-
-### Exemplo de Configuração de Ambiente:
-
-```json
-{
-  "base_url": "http://localhost:3000",
-  "jwt_token": "your-jwt-token-here"
+  
+  static async set(key, data, ttl = 300) {
+    try {
+      await redisClient.setex(key, ttl, JSON.stringify(data));
+    } catch (error) {
+      console.error('Cache set error:', error);
+    }
+  }
+  
+  static async invalidate(pattern) {
+    try {
+      const keys = await redisClient.keys(pattern);
+      if (keys.length > 0) {
+        await redisClient.del(...keys);
+      }
+    } catch (error) {
+      console.error('Cache invalidate error:', error);
+    }
+  }
 }
 ```
 
-### Endpoints Cobertos:
+### 3. **Docker Compose Setup**
+```yaml
+version: '3.8'
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - MONGO_URI=mongodb://mongo:27017/taskmanager
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - mongo
+      - redis
+  
+  mongo:
+    image: mongo:5.0
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+  
+  redis:
+    image: redis:6.2-alpine
+    ports:
+      - "6379:6379"
+```
 
-- Registrar Usuário
-- Login de Usuário
-- Listar Todas as Tarefas
-- Adicionar Nova Tarefa (Precisa estar autenticado)
-- Atualizar o Status de uma Tarefa
-- Deletar Tarefa por ID (Precisa estar autenticado)
+## 📁 Estrutura do Projeto
+```
+node-task-manager/
+├── src/
+│   ├── controllers/        # Lógica de negócio
+│   ├── models/            # Modelos MongoDB
+│   ├── routes/            # Definição de rotas
+│   ├── middleware/        # Middlewares customizados
+│   ├── services/          # Serviços (cache, auth)
+│   └── utils/             # Utilitários
+├── docker-compose.yml     # Orquestração de containers
+├── Dockerfile            # Imagem da aplicação
+├── package.json          # Dependências
+└── .env                  # Variáveis de ambiente
+```
+
+## 🔧 Como Executar
+
+### Docker (Recomendado)
+```bash
+# Clone o repositório
+git clone <repo-url>
+cd node-task-manager
+
+# Configure variáveis de ambiente
+cp .env.example .env
+
+# Inicie com Docker Compose
+docker-compose up -d --build
+
+# Verifique se está funcionando
+curl http://localhost:3000/tasks
+```
+
+### Local
+```bash
+# Instale dependências
+npm install
+
+# Configure MongoDB e Redis localmente
+# Inicie a aplicação
+npm start
+```
+
+## 📊 Endpoints da API
+
+### Autenticação
+```bash
+# Registrar usuário
+POST /users/register
+{
+  "username": "testuser",
+  "password": "password123"
+}
+
+# Login
+POST /users/login
+{
+  "username": "testuser", 
+  "password": "password123"
+}
+```
+
+### Tarefas (Requer autenticação)
+```bash
+# Listar tarefas
+GET /tasks
+Authorization: Bearer <token>
+
+# Criar tarefa
+POST /tasks
+{
+  "title": "Nova tarefa"
+}
+
+# Atualizar tarefa
+PUT /tasks/:id
+{
+  "status": "complete"
+}
+
+# Deletar tarefa
+DELETE /tasks/:id
+```
+
+## 🚧 Desafios Enfrentados
+1. **Autenticação JWT:** Implementar middleware de autenticação
+2. **Cache Strategy:** Invalidação inteligente de cache
+3. **Docker Networking:** Comunicação entre containers
+4. **Error Handling:** Tratamento consistente de erros
+5. **Validação:** Sanitização e validação de dados
+6. **Performance:** Otimização com cache Redis
+
+## 📚 Recursos Utilizados
+- [Node.js Documentation](https://nodejs.org/docs/)
+- [Express.js Guide](https://expressjs.com/en/guide/)
+- [MongoDB Manual](https://docs.mongodb.com/)
+- [Redis Documentation](https://redis.io/documentation)
+- [JWT.io](https://jwt.io/) - Entendimento de tokens
+- [Docker Documentation](https://docs.docker.com/)
+
+## 📈 Próximos Passos
+- [ ] Implementar testes unitários (Jest)
+- [ ] Adicionar testes de integração
+- [ ] Implementar rate limiting
+- [ ] Adicionar logging estruturado
+- [ ] Implementar health checks
+- [ ] Adicionar métricas de performance
+
+## 🔗 Projetos Relacionados
+- [Nest Task Manager](../nest-taskmanager-app/) - Versão com NestJS
+- [React Task Manager](../react-taskmanager-app/) - Frontend da aplicação
+- [Front Task Manager](../front-task-manager/) - Interface HTML/CSS/JS
 
 ---
 
-## Proximas melhorias:
+**Desenvolvido por:** Felipe Macedo  
+**Contato:** contato.dev.macedo@gmail.com  
+**GitHub:** [FelipeMacedo](https://github.com/felipemacedo1)  
+**LinkedIn:** [felipemacedo1](https://linkedin.com/in/felipemacedo1)
 
-- **Testes unitários**: Implementar testes unitários para as funções principais da API, para garantir que o básico esteja bem coberto.
-- **Testes de integração**: Implementar testes de integração para verificar se a API, MongoDB e Redis estão funcionando bem juntos.
-- **Cobertura de testes**: Garantir que a cobertura de testes seja superior a 70%, usando ferramentas como Jest ou SonarCloud para monitorar isso.
-
-<!-- 
-## Contribuições
-
-Contribuições são bem-vindas! Sinta-se à vontade para enviar PRs com melhorias.
-
-## Licença
-
-Este projeto é licenciado sob a licença MIT - veja o arquivo [LICENSE](LICENSE) para mais detalhes. -->
+> 💡 **Reflexão:** Este projeto consolidou meus conhecimentos em Node.js e arquitetura de APIs. A experiência com MongoDB, Redis e Docker estabeleceu bases sólidas para desenvolvimento backend moderno e escalável.
